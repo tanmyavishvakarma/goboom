@@ -3,8 +3,10 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"goboom/internal"
+	"goboom/internal/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,11 +41,21 @@ func (s *Server) cloneRepo(c *gin.Context) {
 
 	repoUrl := req.RepoURL
 	id := internal.GenerateUniqueID()
-	directory := fmt.Sprintf("tmp/output%s", id)
+	dirName := internal.ExtractRepoName(repoUrl) + "-" + id
+
+	directory := fmt.Sprintf("tmp/%s", dirName)
 	if err := internal.CloneRepoInDirectory(repoUrl, directory); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clone repository"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, CloneRepoResponse{ID: id, Directory: directory})
+	objectKey := fmt.Sprintf("repos/%s", dirName)
+	if err := storage.UploadDirectoryToS3(os.Getenv("AWS_S3_BUCKET_NAME"), objectKey, directory); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	defer internal.DeleteDirectory(directory)
+
+	c.JSON(http.StatusOK, CloneRepoResponse{ID: id, Directory: objectKey})
 }

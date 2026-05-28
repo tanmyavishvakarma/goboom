@@ -2,8 +2,10 @@ package internal
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -18,4 +20,20 @@ func CloneRepoInDirectory(repoUrl string, directory string) error {
 	cloneCmd := exec.Command("git", "clone", repoUrl, ".")
 	cloneCmd.Dir = directory
 	return cloneCmd.Run()
+}
+
+func ExtractRepoName(path string) string {
+	u, err := url.Parse(path)
+	if err != nil {
+		return ""
+	}
+
+	repo := strings.TrimPrefix(u.Path, "/")
+	repo = strings.TrimSuffix(repo, ".git")
+	repo = strings.ReplaceAll(repo, "/", "-")
+	return repo
+}
+
+func DeleteDirectory(directory string) error {
+	return os.RemoveAll(directory)
 }
