@@ -1,0 +1,17 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp/air-deploy"
+
+[build]
+  cmd = "go build -o ./tmp/air-deploy/main ./cmd/deploy-service"
+  bin = "./tmp/air-deploy/main"
+  full_bin = "./tmp/air-deploy/main"
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "vendor"]
+  delay = 1000
+
+[log]
+  time = true
+
+[misc]
+  clean_on_exit = true

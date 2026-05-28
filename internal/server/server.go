@@ -18,8 +18,8 @@ type Server struct {
 	db database.Service
 }
 
-func NewServer() *http.Server {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
+func NewServer(portEnvKey string) *http.Server {
+	port, _ := strconv.Atoi(os.Getenv(portEnvKey))
 	fmt.Printf("Server is running on port %d\n", port)
 	NewServer := &Server{
 		port: port,

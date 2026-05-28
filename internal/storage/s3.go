@@ -6,26 +6,19 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/aws/aws-sdk-go-v2/config"
+	"goboom/internal/helper"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 func CreateS3Session() (*s3.Client, error) {
 
-	cfg, err := config.LoadDefaultConfig(
-		context.TODO(),
-
-		config.WithRegion(
-			os.Getenv("AWS_REGION"),
-		),
-	)
+	cfg, err := helper.GetAWSConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	s3Client := s3.NewFromConfig(cfg)
-
-	return s3Client, nil
+	return s3.NewFromConfig(cfg), nil
 }
 
 func UploadDirectoryToS3(bucketName string, deploymentID string, directory string) error {
